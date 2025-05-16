@@ -5,6 +5,7 @@ from typing import Any, Generic, TypeVar
 import torch
 from accelerate import Accelerator
 from transformers import GenerationConfig, PreTrainedModel, PreTrainedTokenizerBase
+from tqdm.auto import tqdm 
 
 from turbo_alignment.dataset.base import BaseDataset
 from turbo_alignment.dataset.base.models import DatasetRecord
@@ -48,7 +49,6 @@ class BaseGenerator(Generic[DatasetRecordT, InferenceOutputT]):
 
     def generate_from_dataset(self, dataset: BaseDataset) -> list[InferenceOutputT]:
         input_records = [dataset[idx] for idx in range(len(dataset))]
-
         records_batches = [
             input_records[i * self._batch : (i + 1) * self._batch]
             for i in range(math.ceil(len(dataset) / self._batch))
@@ -57,12 +57,11 @@ class BaseGenerator(Generic[DatasetRecordT, InferenceOutputT]):
         original_records_batches = [
             [dataset.get_original_record_by_id(r['id']) for r in batch] for batch in records_batches
         ]
-
         if self._accelerator is None:
             generations = []
-            for i, (records_batch, original_records_batch) in enumerate(
+            for i, (records_batch, original_records_batch) in tqdm(enumerate(
                 zip(records_batches, original_records_batches)
-            ):
+            )):
                 generations.append(
                     self._generate_from_batch(
                         records_batch,
@@ -71,17 +70,37 @@ class BaseGenerator(Generic[DatasetRecordT, InferenceOutputT]):
                     )
                 )
         else:
+            if len(list(zip(records_batches, original_records_batches))) % self._accelerator.num_processes != 0:
+                apply_padding = True
+            else:
+                apply_padding = False
+
             with self._accelerator.split_between_processes(
-                list(zip(records_batches, original_records_batches)), apply_padding=True
+                list(zip(records_batches, original_records_batches)), apply_padding=apply_padding
             ) as accelerator_records:
-                generations = [
-                    self._generate_from_batch(
+
+                if self._accelerator.is_local_main_process:
+                    pbar = tqdm(
+                        total=len(records_batches),
+                        desc="Generating",
+                        leave=True,
+                        dynamic_ncols=True,
+                    )
+                else:
+                    pbar = None 
+
+                generations = []
+                for i, (records_batch, original_records_batch) in enumerate(accelerator_records):
+
+                    gen = self._generate_from_batch(
                         records_batch,
                         original_records_batch,
                         dataset.source.name,
                     )
-                    for records_batch, original_records_batch in accelerator_records
-                ][: len(records_batches)]
+                    generations.append(gen)
+                    if pbar:
+                        print(f'ITERATION {i} from {len(accelerator_records)}')
+                generations = generations[: len(records_batches)]
 
         return sum(generations, [])
 

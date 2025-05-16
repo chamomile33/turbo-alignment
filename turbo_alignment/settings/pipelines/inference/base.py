@@ -8,6 +8,7 @@ from turbo_alignment.settings.datasets.chat import ChatMultiDatasetSettings
 from turbo_alignment.settings.datasets.classification import (
     ClassificationMultiDatasetSettings,
 )
+from turbo_alignment.settings.datasets.recommendation import RecommendationMultiDatasetSettings
 from turbo_alignment.settings.model import (
     PreTrainedAdaptersModelSettings,
     PreTrainedModelSettings,
@@ -15,7 +16,7 @@ from turbo_alignment.settings.model import (
 from turbo_alignment.settings.tf.tokenizer import TokenizerSettings
 
 INFERENCE_DATASETS_SETTINGS = Annotated[
-    ChatMultiDatasetSettings | ClassificationMultiDatasetSettings,
+    ChatMultiDatasetSettings | ClassificationMultiDatasetSettings | RecommendationMultiDatasetSettings,
     Field(discriminator='dataset_type'),
 ]
 

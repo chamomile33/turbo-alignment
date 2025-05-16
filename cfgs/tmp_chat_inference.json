@@ -1,0 +1,64 @@
+{
+    "inference_settings": [
+      {
+        "model_settings": {
+            "model_path": "/from_s3/model",
+            "model_type": "causal",
+            "resize_token_embeddings": true,
+            "transformers_settings": {},
+            "liger_kernels_settings": {
+                "use_cross_entropy": false,
+                "use_rms_norm": false,
+                "use_rope": true,
+                "use_fused_linear_cross_entropy": true,
+                "use_mlp": true
+            },
+            "model_kwargs": {
+                "attn_implementation": "flash_attention_2"
+            }
+        },
+        "tokenizer_settings": { 
+            "use_fast": false
+        },
+        "generation_settings": [
+          {
+            "transformers_settings": {
+                "num_beams": 1,
+                "do_sample": true,
+                "repetition_penalty": 1.0,
+                "stop_strings": ["<|im_end|>"],
+                "max_new_tokens": 512
+            },
+            "custom_settings": {
+                "skip_special_tokens": true,
+                "batch": 32
+            }
+          }
+        ],
+        "use_vllm": false,
+        "batch": 32
+      }
+    ],
+    "dataset_settings": {
+      "sources": [
+        {
+          "name": "chat_test",
+          "records_path": "s3_datasets/part_10.jsonl",
+          "sample_rate": 1.0
+        }
+      ],
+      "prompt_template": {
+        "role_tag_mapping": {
+            "bot": "assistant",
+            "user": "user",
+            "system": "system"
+        },
+        "prefix_template": "<|im_start|>{role}\n",
+        "suffix_template": "<|im_end|>\n"
+      },
+      "dataset_type": "chat",
+      "max_tokens_count": 8000,
+      "only_answer_loss": true
+    },
+    "save_path": "test_inference_output"
+  }

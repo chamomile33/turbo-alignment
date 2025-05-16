@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Generator, Generic, TypeVar
 
 from accelerate import Accelerator
-from accelerate.utils import set_seed
+from accelerate.utils import set_seed, DeepSpeedPlugin
 from accelerate.utils.operations import gather_object
 from pydantic import BaseModel
 from transformers import PreTrainedTokenizerBase
@@ -16,6 +16,7 @@ from turbo_alignment.pipelines.base import BaseStrategy
 from turbo_alignment.settings.datasets.base import DatasetStrategy
 from turbo_alignment.settings.generators.outputs.base import BaseInferenceOutput
 from turbo_alignment.settings.pipelines.inference import InferenceExperimentSettings
+from pathlib import Path
 
 logger = get_project_logger()
 
@@ -33,10 +34,28 @@ class BaseInferenceStrategy(BaseStrategy, Generic[InferenceExperimentSettingsT])
         ...
 
     def run(self, experiment_settings: InferenceExperimentSettingsT) -> None:
-        accelerator = Accelerator()
+        use_accelerator = getattr(experiment_settings, 'use_accelerator', True)
+        deepspeed_config = getattr(experiment_settings, 'deepspeed_config', None)
+        fsdp_config = getattr(experiment_settings, 'fsdp_config', None)
+        
+        if use_accelerator:
+            if deepspeed_config:
+                if isinstance(deepspeed_config, Path):
+                    ds_plugin = DeepSpeedPlugin(hf_ds_config=str(deepspeed_config))
+                else:
+                    ds_plugin = DeepSpeedPlugin(hf_ds_config=deepspeed_config)
+
+                accelerator = Accelerator(deepspeed_plugin=ds_plugin)
+            elif fsdp_config:
+                accelerator = Accelerator(fsdp_plugin=fsdp_config)
+            else:
+                accelerator = Accelerator()
+        else:
+            accelerator = Accelerator()
+            
         set_seed(seed=0, device_specific=False)
         experiment_settings.save_path.mkdir(parents=True, exist_ok=True)
-
+        
         report = {}
         for tokenizer, generator, filename, parameters_to_save in self._get_single_inference_settings(
             experiment_settings, accelerator
@@ -47,14 +66,17 @@ class BaseInferenceStrategy(BaseStrategy, Generic[InferenceExperimentSettingsT])
                 strategy=DatasetStrategy.INFERENCE,
                 seed=experiment_settings.seed,
             )
+
             generations_output: list[BaseModel] = sum(
                 [gather_object(generator.generate_from_dataset(dataset)) for dataset in datasets], []
             )
 
-            write_jsonl(
-                [out.dict(exclude_none=True) for out in generations_output], experiment_settings.save_path / filename
-            )
+            if accelerator.is_main_process:
+                write_jsonl(
+                    [out.dict(exclude_none=True) for out in generations_output], experiment_settings.save_path / filename
+                )
+                report[filename] = parameters_to_save
 
-            report[filename] = parameters_to_save
-
-        write_json(report, experiment_settings.save_path / 'info.json')
+        if accelerator.is_main_process:
+            write_json(report, experiment_settings.save_path / 'info.json')
+            logger.info(f"Результаты сохранены в {experiment_settings.save_path}")

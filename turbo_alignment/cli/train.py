@@ -57,3 +57,16 @@ def classification_training(
 ) -> None:
     experiment_settings = pipeline_settings.ClassificationTrainExperimentSettings.parse_file(experiment_settings_path)
     pipelines.TrainClassificationStrategy().run(experiment_settings)
+
+
+@app.command(name='train_recsys', help='Train Recommendation Model')
+def recsys_training(
+    experiment_settings_path: Path = typer.Option(
+        ...,
+        '--experiment_settings_path',
+        exists=True,
+        help='Path to experiment config file',
+    )
+) -> None:
+    experiment_settings = pipeline_settings.RecommendationTrainExperimentSettings.parse_file(experiment_settings_path)
+    pipelines.TrainRecommendationStrategy().run(experiment_settings)

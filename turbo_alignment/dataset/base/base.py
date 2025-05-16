@@ -66,8 +66,7 @@ class BaseDataset(Dataset, ABC, Generic[RecordT]):
                 for record in random.sample(original_records, k=min(self.source.num_samples, len(original_records)))
             }
         else:
-            raise ValueError('neither sample_rate nor num_samples are not set')
-
+            raise ValueError('neither sample_rate nor num_samples are not set') 
         sampled_records = [r for r in self.convert_records(list(sampled_original_records.values())) if r is not None]
 
         return sampled_original_records, sampled_records

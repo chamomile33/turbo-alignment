@@ -1,6 +1,7 @@
 from enum import Enum
+from typing import List
 
-from pydantic import field_validator
+from pydantic import field_validator, Field
 
 from turbo_alignment.common.registry import Registrable
 from turbo_alignment.settings.base import ExtraFieldsNotAllowedBaseModel
@@ -104,3 +105,10 @@ class ToolMetricsSettings(MetricSettings):
 @MetricSettingsRegistry.register(MetricType.RETRIEVAL_UTILITY)
 class RetrievalUtilitySettings(MetricSettings):
     doc_sep_symbol: str = '<doc_sep>'
+
+@MetricSettingsRegistry.register(MetricType.RECOMMENDATION_METRIC)
+class RecommendationMetricsSettings(MetricSettings):
+    top_k: List[int] = Field(default=[10])
+    item_embeddings_path: str
+    batch_size: int = Field(default=128)
+    need_average: List[bool] = [True]

@@ -55,3 +55,39 @@ class PreTrainedAdaptersModelSettings(PreTrainedModelSettings):
 
 class ModelForPeftSettings(PreTrainedModelSettings):
     peft_settings: PEFT_TYPE
+
+class ModelWithMlpSettings(PreTrainedModelSettings):
+    add_mlp_layer: bool
+    mlp_intermediate_size: int = 8192 
+    mlp_initializer_range: float = 0.02
+    mlp_hidden_act: str = 'silu'
+    freeze_base_model: bool = True
+    mlp_pooling_type: str = "mean" 
+
+class TimeAwareModelSettings(PreTrainedModelSettings):
+    is_time_aware_model: bool
+    time_dim: int = 6 
+
+class CollabEmbedsModelSettings(PreTrainedModelSettings):
+    is_collab_embeds_model: bool
+    projector_hidden_dim: int = 1024
+    embed_dim: int = 300
+    
+class CrossAttentionModelSettings(PreTrainedModelSettings):
+    is_cross_attention_model: bool
+    num_cross_layers: int = 3
+    collaborative_embedding_dim: int = 300
+
+class CollabAttentionModelSettings(PreTrainedModelSettings):
+    is_collab_attention_model: bool
+    num_collaborative_layers: int = 3
+    collaborative_embedding_dim: int = 300
+    projector_hidden_ratio: float = 4
+    attention_fusion_type: str = "sum"
+
+class CollabCrossAttentionModelSettings(PreTrainedModelSettings):
+    is_collab_cross_attention_model: bool
+    num_collaborative_layers: int = 3
+    collaborative_embedding_dim: int = 300
+    projector_hidden_ratio: float = 4
+    attention_fusion_type: str = "sum"

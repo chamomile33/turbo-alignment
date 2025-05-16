@@ -11,6 +11,12 @@ from turbo_alignment.settings.model import (
     ModelForPeftSettings,
     PreTrainedAdaptersModelSettings,
     PreTrainedModelSettings,
+    ModelWithMlpSettings,
+    TimeAwareModelSettings,
+    CollabEmbedsModelSettings,
+    CrossAttentionModelSettings,
+    CollabAttentionModelSettings,
+    CollabCrossAttentionModelSettings
 )
 from turbo_alignment.settings.s3 import CheckpointUploaderCallbackParameters
 from turbo_alignment.settings.tf.special_tokens_setter import SpecialTokensSettings
@@ -32,7 +38,9 @@ class BaseTrainExperimentSettings(BaseSettings):
     tokenizer_settings: TokenizerSettings
     special_tokens_settings: SpecialTokensSettings
 
-    model_settings: (ModelForPeftSettings | PreTrainedModelSettings | PreTrainedAdaptersModelSettings)
+    model_settings: (ModelForPeftSettings | PreTrainedModelSettings | PreTrainedAdaptersModelSettings |
+                      ModelWithMlpSettings | TimeAwareModelSettings | CollabEmbedsModelSettings | 
+                      CrossAttentionModelSettings | CollabAttentionModelSettings | CollabCrossAttentionModelSettings)
 
     train_dataset_settings: MultiDatasetSettings
     val_dataset_settings: MultiDatasetSettings

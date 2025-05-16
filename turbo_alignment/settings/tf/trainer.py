@@ -5,7 +5,7 @@ from turbo_alignment.settings.base import ExtraFieldsNotAllowedBaseModel
 
 
 class TrainerSettings(ExtraFieldsNotAllowedBaseModel):
-    evaluation_strategy: str = 'steps'
+    eval_strategy: str = 'steps'
     save_strategy: str = 'steps'
     per_device_train_batch_size: int = 4
     per_device_eval_batch_size: int = 4
@@ -34,7 +34,7 @@ class TrainerSettings(ExtraFieldsNotAllowedBaseModel):
     save_total_limit: int = 1
     save_only_model: bool = False
     no_cuda: bool = False
-    prediction_loss_only: bool = False
+    prediction_loss_only: bool = True
     load_best_model_at_end: bool = True
     logging_first_step: bool = True
     fsdp_config: dict[str, Any] | None = None
@@ -47,3 +47,5 @@ class TrainerSettings(ExtraFieldsNotAllowedBaseModel):
     gradient_checkpointing_kwargs: dict[str, Any] = {}
     neftune_noise_alpha: float | None = None
     report_to: list[str] = []
+    remove_unused_columns: bool = False
+    label_names: list[str] = []

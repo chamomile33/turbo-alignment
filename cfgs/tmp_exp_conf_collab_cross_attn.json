@@ -1,0 +1,135 @@
+{
+    "train_dataset_settings": {
+        "sources": [
+            {
+                "name": "recs_train",
+                "records_path": "s3_datasets/rec_train_data_multitarget_lite.jsonl",
+                "sample_rate": 0.7
+            }
+        ],
+        "dataset_type": "collab_cross_attention",
+        "max_tokens_count": 5500
+    },
+    "val_dataset_settings": {
+        "sources": [
+            {
+                "name": "recs_val",
+                "records_path": "s3_datasets/rec_val_data_multitarget_lite.jsonl",
+                "sample_rate": 0.2
+            }
+        ],
+        "dataset_type": "collab_cross_attention",
+        "max_tokens_count": 5500
+    },
+    "model_settings": {
+        "model_path": "/from_s3/model",
+        "model_type": "causal",
+        "resize_token_embeddings": true,
+        "transformers_settings": {},
+        "liger_kernels_settings": {
+            "use_cross_entropy": false,
+            "use_rms_norm": false,
+            "use_rope": true,
+            "use_fused_linear_cross_entropy": true,
+            "use_mlp": true
+        },
+        "model_kwargs": {
+            "attn_implementation": "flash_attention_2"
+        },
+        "embeddings_initialization_strategy": {
+            "<collab-embed>" : "коллаборативный эмбеддинг"
+        },
+        "is_collab_cross_attention_model": true,
+        "num_collaborative_layers": 6,
+        "collaborative_embedding_dim": 300,
+        "projector_hidden_ratio": 4,
+        "attention_fusion_type": "sum"
+    },
+    "tokenizer_settings": { 
+        "use_fast": true
+    },
+    "special_tokens_settings": {
+        "bos_token": "<|im_start|>",
+        "eos_token": "<|im_end|>",
+        "pad_token": "<|endoftext|>"
+    },
+    "trainer_settings": {
+        "per_device_train_batch_size": 16,
+        "per_device_eval_batch_size": 16,
+        "gradient_accumulation_steps": 2,
+        "eval_steps": 60,
+        "save_steps": 100,
+        "logging_steps": 1,
+        "learning_rate": 1e-5,
+        "num_train_epochs": 1,
+        "lr_scheduler_type": "cosine",
+        "warmup_ratio": 0.2,
+        "fp16": false,
+        "bf16": true,
+        "adam_beta1": 0.9,
+        "adam_beta2": 0.95,
+        "adam_epsilon": 1e-12,
+        "max_grad_norm": 7.0,
+        "weight_decay": 0.0,  
+        "optim": "adamw_torch",
+        "save_total_limit": 3,
+        "dataloader_num_workers": 18,
+        "gradient_checkpointing": true, 
+        "gradient_checkpointing_kwargs": {
+            "use_reentrant": false
+        },
+        "save_only_model": true,
+        "deepspeed": "configs/deepspeed/stage3.json",
+        "load_best_model_at_end": false
+    },
+    "loss_settings": {
+        "pooling_strategy": "mean",
+        "temperature": 0.1,
+        "gather_items_in_batch": false
+    },
+    "logging_settings": {
+        "project_name": "llm-in-recsys",
+        "task_name": "ruadapt_training_1e-5_02_16_1_lite_with_collab_cross_attention"
+    },
+    "cherry_pick_settings": {
+          "custom_generation_settings": {
+            "pooling_strategy": "mean"
+          },
+          "dataset_settings": {
+            "sources": [
+              {
+                "name": "user",
+                "records_path": "s3_datasets/evaluation_data_lite.jsonl",
+                "num_samples": 2048
+              }
+            ],
+            "dataset_type": "collab_cross_attention",
+            "max_tokens_count": 5500
+          },
+          "items_dataset_settings": {
+            "sources": [
+              {
+                "name": "items",
+                "records_path": "s3_datasets/item_data_lite.jsonl",
+                "sample_rate": 1.0
+              }
+            ],
+            "dataset_type": "collab_attention_embeddings",
+            "max_tokens_count": 5500
+          },
+          "items_embeddings_output_path": "s3_datasets/item_embeddings.jsonl",  
+          "metric_settings": [
+            {
+              "type": "recommendation",  
+              "parameters": {
+                "top_k": [5, 10, 20, 50, 100, 200], 
+                "need_average": [true],
+                "batch_size": 8,
+                "item_embeddings_path": "s3_datasets/item_embeddings.jsonl"
+              }
+            }
+          ]
+    },
+    "seed": 122333,
+    "log_path": "train_output"
+}

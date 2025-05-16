@@ -147,9 +147,8 @@ class BaseTrainStrategy(S3Mixin, BaseStrategy, Generic[ExperimentSettingsT]):
         special_tokens_setter.set_custom_tokens(additional_special_tokens)
 
         logger.info('Special tokens added!')
-
         self.model = self._load_model(experiment_settings, self.tokenizer)
-
+        
         special_tokens_setter.setup_model_config(self.model)
 
         logger.info('Model is loaded!')
@@ -173,7 +172,7 @@ class BaseTrainStrategy(S3Mixin, BaseStrategy, Generic[ExperimentSettingsT]):
         )
 
         data_collator = self._get_data_collator(experiment_settings, self.tokenizer)
-
+    
         self.trainer = self._get_trainer(
             training_args,
             experiment_settings,
@@ -186,9 +185,7 @@ class BaseTrainStrategy(S3Mixin, BaseStrategy, Generic[ExperimentSettingsT]):
 
         if self.trainer.accelerator.is_main_process:
             self._dataset_and_collator_sanity_check(train_dataset, data_collator)
-
         self._add_trainer_callbacks(experiment_settings)
-
         os.makedirs(self.trainer.args.output_dir, exist_ok=True)
         self._save_experiment_config(
             experiment_settings, self.trainer.model, Path(self.trainer.args.output_dir) / 'experiment.config'
@@ -198,7 +195,8 @@ class BaseTrainStrategy(S3Mixin, BaseStrategy, Generic[ExperimentSettingsT]):
         self._save_experiment_metadata(
             experiment_metadata, Path(self.trainer.args.output_dir) / 'experiment_metadata.json'
         )
-
         self.trainer.train()
 
         self.trainer.save_model()
+
+        

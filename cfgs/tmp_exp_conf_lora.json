@@ -1,0 +1,101 @@
+{
+    "train_dataset_settings": {
+        "sources": [
+            {
+                "name": "recs_train",
+                "records_path": "s3_datasets/rec_train_data.jsonl",
+                "sample_rate": 0.5
+            }
+        ],
+        "dataset_type": "recommendation",
+        "max_tokens_count": 5000
+    },
+    "val_dataset_settings": {
+        "sources": [
+            {
+                "name": "recs_val",
+                "records_path": "s3_datasets/rec_val_data.jsonl",
+                "sample_rate": 0.1
+            }
+        ],
+        "dataset_type": "recommendation",
+        "max_tokens_count": 5000
+    },
+    "model_settings": {
+        "model_path": "/from_s3/model",
+        "model_type": "causal",
+        "resize_token_embeddings": true,
+        "transformers_settings": {},
+        "liger_kernels_settings": {
+            "use_cross_entropy": false,
+            "use_rms_norm": false,
+            "use_rope": true,
+            "use_fused_linear_cross_entropy": true,
+            "use_mlp": true
+        },
+        "model_kwargs": {
+            "attn_implementation": "flash_attention_2"
+        },
+        "peft_settings": {
+            "r": 16,
+            "task_type": "CAUSAL_LM",
+            "lora_alpha": 32,
+            "lora_dropout": 0.05,
+            "target_modules": [
+                "q_proj",
+                "v_proj"
+            ],
+            "modules_to_save": ["embed_tokens","lm_head"],
+            "name": "LORA"
+        }
+    },
+    "tokenizer_settings": { 
+        "use_fast": true
+    },
+    "special_tokens_settings": {
+        "bos_token": "<|im_start|>",
+        "eos_token": "<|im_end|>",
+        "pad_token": "<|endoftext|>"
+    },
+    "trainer_settings": {
+        "evaluation_strategy": "steps",
+        "per_device_train_batch_size": 8,
+        "per_device_eval_batch_size": 8,
+        "gradient_accumulation_steps": 2,
+        "eval_steps": 2,
+        "save_steps": 150,
+        "logging_steps": 1,
+        "learning_rate": 1e-6,
+        "num_train_epochs": 1,
+        "lr_scheduler_type": "cosine",
+        "warmup_ratio": 0.3,
+        "fp16": false,
+        "bf16": true,
+        "adam_beta1": 0.9,
+        "adam_beta2": 0.95,
+        "adam_epsilon": 1e-12,
+        "max_grad_norm": 2.0,
+        "weight_decay": 0.0,  
+        "optim": "adamw_torch",
+        "save_total_limit": 2,
+        "dataloader_num_workers": 32,
+        "gradient_checkpointing": true, 
+        "gradient_checkpointing_kwargs": {
+            "use_reentrant": true
+        },
+        "save_only_model": true,
+        "deepspeed": "configs/deepspeed/stage2.json",
+        "load_best_model_at_end": false
+    },
+    "loss_settings": {
+        "pooling_strategy": "mean",
+        "temperature": 1,
+        "gather_items_in_batch": true
+    },
+    "logging_settings": {
+        "project_name": "llm-in-recsys",
+        "task_name": "tlite_training"
+    },
+    "seed": 122333,
+    "log_path": "train_output"
+}

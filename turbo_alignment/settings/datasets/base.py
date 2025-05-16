@@ -11,6 +11,15 @@ class DatasetType(str, Enum):
     PAIR_PREFERENCES = 'pair_preferences'
     SAMPLING = 'sampling'
     CLASSIFICATION = 'classification'
+    RECOMMENDATION = 'recommendation'
+    EMBEDDINGS = 'embeddings'
+    TIME_AWARE_RECOMMENDATION = 'time_aware_recommendation'
+    COLLAB_EMBEDS = 'collab_embeds'
+    COLLAB_EMBEDS_EMBEDDINGS = 'collab_embeds_embeddings'
+    CROSS_ATTENTION = 'cross_attention'
+    COLLAB_ATTENTION = 'collab_attention'
+    COLLAB_ATTENTION_EMBEDDINGS = 'collab_attention_embeddings'
+    COLLAB_CROSS_ATTENTION = 'collab_cross_attention'
 
 
 class DatasetStrategy(str, Enum):

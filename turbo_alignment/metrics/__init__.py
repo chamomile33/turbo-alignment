@@ -9,3 +9,6 @@ from turbo_alignment.metrics.registry import *
 from turbo_alignment.metrics.reward import RewardMetric
 from turbo_alignment.metrics.rouge import RougeMetric
 from turbo_alignment.metrics.self_bleu import SelfBleuMetric
+from turbo_alignment.metrics.recommendation import PrecisionMetric, RecallMetric, NDCGMetric, RecommendationMetric
+
+__all__ = ['PrecisionMetric', 'RecallMetric', 'NDCGMetric', 'RecommendationMetric']
